@@ -180,17 +180,18 @@ st.sidebar.markdown("<h4 style='color: #a78bfa;'>🌐 Pengaturan Browser</h4>", 
 headless_mode = st.sidebar.checkbox("Jalankan Headless (Tanpa Tampilan Browser)", value=Config.HEADLESS)
 slow_mo = st.sidebar.slider("Delay Aksi Browser (Slow Mo - ms)", min_value=100, max_value=2000, value=Config.SLOW_MO, step=100)
 
+# Dynamically update config on every rerun using the current values of widgets
+Config.update_keys(
+    gemini_key=gemini_key,
+    openai_key=openai_key,
+    provider=provider_str,
+    model=active_model
+)
+Config.HEADLESS = headless_mode
+Config.SLOW_MO = slow_mo
+
 # Save settings back to config
 if st.sidebar.button("💾 Simpan Pengaturan"):
-    Config.update_keys(
-        gemini_key=gemini_key,
-        openai_key=openai_key,
-        provider=provider_str,
-        model=active_model
-    )
-    # Persist headless and slow_mo
-    Config.HEADLESS = headless_mode
-    Config.SLOW_MO = slow_mo
     st.sidebar.success("Pengaturan berhasil disimpan!")
 
 # Display current active credentials status
