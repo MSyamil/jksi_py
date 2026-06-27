@@ -150,21 +150,25 @@ api_provider = st.sidebar.selectbox(
 
 provider_str = "gemini" if "Gemini" in api_provider else "openai"
 
-# API Key inputs (disembunyikan di dalam expander agar tidak terlihat orang lain)
+# API Key inputs (selalu kosong di UI demi keamanan, fallback ke environment/secrets jika kosong)
 with st.sidebar.expander("🔑 Pengaturan API Key (Aman)", expanded=False):
-    gemini_key = st.text_input(
+    gemini_key_input = st.text_input(
         "Gemini API Key",
-        value=Config.GEMINI_API_KEY,
+        value="",
         type="password",
-        help="Dapatkan key gratis dari Google AI Studio."
+        help="Masukkan key dari Google AI Studio. Kosongkan jika sudah diatur di Secrets."
     )
 
-    openai_key = st.text_input(
+    openai_key_input = st.text_input(
         "OpenAI API Key",
-        value=Config.OPENAI_API_KEY,
+        value="",
         type="password",
-        help="Masukkan OpenAI API Key Anda (opsional)."
+        help="Masukkan OpenAI API Key Anda. Kosongkan jika sudah diatur di Secrets."
     )
+
+# Resolve key: Prioritaskan input manual UI, lalu fallback ke environment/secrets
+gemini_key = gemini_key_input if gemini_key_input else Config.GEMINI_API_KEY
+openai_key = openai_key_input if openai_key_input else Config.OPENAI_API_KEY
 
 # Model selection based on provider
 if provider_str == "gemini":
