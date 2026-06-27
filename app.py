@@ -180,13 +180,9 @@ st.sidebar.markdown("<h4 style='color: #a78bfa;'>🌐 Pengaturan Browser</h4>", 
 headless_mode = st.sidebar.checkbox("Jalankan Headless (Tanpa Tampilan Browser)", value=Config.HEADLESS)
 slow_mo = st.sidebar.slider("Delay Aksi Browser (Slow Mo - ms)", min_value=100, max_value=2000, value=Config.SLOW_MO, step=100)
 
-# Dynamically update config on every rerun using the current values of widgets
-Config.update_keys(
-    gemini_key=gemini_key,
-    openai_key=openai_key,
-    provider=provider_str,
-    model=active_model
-)
+# Persist non-sensitive configuration on Config globally
+Config.DEFAULT_PROVIDER = provider_str
+Config.DEFAULT_MODEL = active_model
 Config.HEADLESS = headless_mode
 Config.SLOW_MO = slow_mo
 
@@ -197,7 +193,7 @@ if st.sidebar.button("💾 Simpan Pengaturan"):
 # Display current active credentials status
 st.sidebar.markdown("---")
 st.sidebar.markdown("### Status Koneksi")
-active_key = Config.get_active_key()
+active_key = gemini_key if provider_str == "gemini" else openai_key
 if active_key:
     st.sidebar.markdown("🟢 **API Key terpasang**")
 else:
@@ -273,7 +269,8 @@ with tab1:
     custom_goal = st.text_area("Atau ketik tujuan uji khusus Anda sendiri:", value=selected_preset, height=80)
 
     # Check key before running
-    if not Config.get_active_key():
+    active_key = gemini_key if provider_str == "gemini" else openai_key
+    if not active_key:
         st.warning("⚠️ API Key belum diatur. Silakan masukkan API Key di menu sebelah kiri terlebih dahulu.")
         run_btn_disabled = True
     else:
@@ -317,7 +314,8 @@ with tab1:
                     goal=custom_goal,
                     provider=provider_str,
                     model=active_model,
-                    ui_callback=agent_callback
+                    ui_callback=agent_callback,
+                    api_key=gemini_key if provider_str == "gemini" else openai_key
                 )
             
             # Report result
@@ -365,7 +363,8 @@ with tab2:
                 generated_steps = AIClient.generate_test_steps(
                     user_prompt=scenario_prompt,
                     provider=provider_str,
-                    model=active_model
+                    model=active_model,
+                    api_key=gemini_key if provider_str == "gemini" else openai_key
                 )
                 st.session_state.generated_steps = generated_steps
                 
@@ -470,7 +469,8 @@ with tab3:
                     simulate_broken_selector=broken_selector_input,
                     provider=provider_str,
                     model=active_model,
-                    ui_callback=healing_callback
+                    ui_callback=healing_callback,
+                    api_key=gemini_key if provider_str == "gemini" else openai_key
                 )
                 
             if res["success"]:
@@ -558,12 +558,12 @@ Tulis laporan dalam format Markdown yang rapi dan elegan dalam Bahasa Indonesia.
 """
             try:
                 if provider_str == "gemini":
-                    genai_client = AIClient._get_gemini_client(Config.GEMINI_API_KEY)
+                    genai_client = AIClient._get_gemini_client(gemini_key)
                     model_instance = genai_client.GenerativeModel(active_model)
                     response = model_instance.generate_content(report_prompt)
                     report_content = response.text
                 else:
-                    openai_client = AIClient._get_openai_client(Config.OPENAI_API_KEY)
+                    openai_client = AIClient._get_openai_client(openai_key)
                     response = openai_client.chat.completions.create(
                         model=active_model,
                         messages=[{"role": "user", "content": report_prompt}]

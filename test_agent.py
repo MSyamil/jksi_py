@@ -12,7 +12,7 @@ class TestAgent:
     def __init__(self):
         self.driver = None
 
-    def run_autonomous_test(self, goal: str, provider: str = None, model: str = None, ui_callback=None) -> dict:
+    def run_autonomous_test(self, goal: str, provider: str = None, model: str = None, ui_callback=None, api_key: str = None) -> dict:
         """
         Runs an autonomous test where the AI decides actions in a loop to achieve a goal.
         ui_callback: Function(step_num, screenshot, thought, reason, action, status) to push updates to UI
@@ -47,7 +47,8 @@ class TestAgent:
                     goal=goal,
                     history=history,
                     provider=provider,
-                    model=model
+                    model=model,
+                    api_key=api_key
                 )
                 
                 thought = ai_response.get("thought", "No thought provided.")
@@ -238,7 +239,7 @@ class TestAgent:
             "message": final_message
         }
 
-    def run_self_healing_test(self, steps: list, simulate_broken_idx: int = None, simulate_broken_selector: str = None, provider: str = None, model: str = None, ui_callback=None) -> dict:
+    def run_self_healing_test(self, steps: list, simulate_broken_idx: int = None, simulate_broken_selector: str = None, provider: str = None, model: str = None, ui_callback=None, api_key: str = None) -> dict:
         """
         Executes test steps, and if a selector fails, uses GenAI to dynamically heal the locator and continue.
         simulate_broken_idx: index of step to inject the broken selector (1-based index)
@@ -325,7 +326,8 @@ class TestAgent:
                         dom_structure=dom_structure,
                         error_message=str(err),
                         provider=provider,
-                        model=model
+                        model=model,
+                        api_key=api_key
                     )
                     
                     healed = healing_result.get("healed", False)

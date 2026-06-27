@@ -20,14 +20,15 @@ class AIClient:
         return OpenAI(api_key=api_key)
 
     @classmethod
-    def analyze_page_state(cls, dom_structure: str, screenshot_bytes: bytes, goal: str, history: list, provider: str = None, model: str = None) -> dict:
+    def analyze_page_state(cls, dom_structure: str, screenshot_bytes: bytes, goal: str, history: list, provider: str = None, model: str = None, api_key: str = None) -> dict:
         """
         Send DOM + Screenshot + Goal + History to AI and get the next action.
         Returns a dict: {thought, action, selector, value, reason}
         """
         provider = provider or Config.DEFAULT_PROVIDER
         model = model or Config.DEFAULT_MODEL
-        api_key = Config.GEMINI_API_KEY if provider == "gemini" else Config.OPENAI_API_KEY
+        if not api_key:
+            api_key = Config.GEMINI_API_KEY if provider == "gemini" else Config.OPENAI_API_KEY
 
         if not api_key:
             return {
@@ -153,14 +154,15 @@ PENTING:
             }
 
     @classmethod
-    def heal_locator(cls, broken_locator: str, dom_structure: str, error_message: str, provider: str = None, model: str = None) -> dict:
+    def heal_locator(cls, broken_locator: str, dom_structure: str, error_message: str, provider: str = None, model: str = None, api_key: str = None) -> dict:
         """
         Use AI to suggest a replacement CSS selector for a broken locator based on the current DOM.
         Returns a dict: {healed: bool, new_selector: str, confidence: float, explanation: str}
         """
         provider = provider or Config.DEFAULT_PROVIDER
         model = model or Config.DEFAULT_MODEL
-        api_key = Config.GEMINI_API_KEY if provider == "gemini" else Config.OPENAI_API_KEY
+        if not api_key:
+            api_key = Config.GEMINI_API_KEY if provider == "gemini" else Config.OPENAI_API_KEY
 
         if not api_key:
             return {"healed": False, "new_selector": "", "confidence": 0.0, "explanation": "API Key not set."}
@@ -218,14 +220,15 @@ Tugas Anda:
             return {"healed": False, "new_selector": "", "confidence": 0.0, "explanation": str(e)}
 
     @classmethod
-    def generate_test_steps(cls, user_prompt: str, provider: str = None, model: str = None) -> list:
+    def generate_test_steps(cls, user_prompt: str, provider: str = None, model: str = None, api_key: str = None) -> list:
         """
         Translate a natural language goal into a structured list of test steps.
         Returns a list of dicts: [{"step": 1, "description": "...", "action": "...", "selector": "...", "value": "..."}]
         """
         provider = provider or Config.DEFAULT_PROVIDER
         model = model or Config.DEFAULT_MODEL
-        api_key = Config.GEMINI_API_KEY if provider == "gemini" else Config.OPENAI_API_KEY
+        if not api_key:
+            api_key = Config.GEMINI_API_KEY if provider == "gemini" else Config.OPENAI_API_KEY
 
         if not api_key:
             return []
