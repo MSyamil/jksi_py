@@ -35,10 +35,29 @@ class WebDriverManager:
         self.playwright = sync_playwright().start()
         
         # Launch Chromium
-        self.browser = self.playwright.chromium.launch(
-            headless=headless,
-            slow_mo=slow_mo
-        )
+        try:
+            self.browser = self.playwright.chromium.launch(
+                headless=headless,
+                slow_mo=slow_mo
+            )
+        except Exception as e:
+            # Check if browser is missing
+            if "Executable doesn't exist" in str(e) or "playwright install" in str(e).lower():
+                logger.warning("Playwright browser binaries not found. Installing chromium automatically...")
+                import subprocess
+                try:
+                    # Run 'playwright install chromium' to download the browser
+                    subprocess.run([sys.executable, "-m", "playwright", "install", "chromium"], check=True)
+                    # Retry launching Chromium
+                    self.browser = self.playwright.chromium.launch(
+                        headless=headless,
+                        slow_mo=slow_mo
+                    )
+                except Exception as install_err:
+                    logger.error(f"Auto-installation of Playwright browser failed: {install_err}")
+                    raise e
+            else:
+                raise e
         
         # Create context and page
         context = self.browser.new_context(
